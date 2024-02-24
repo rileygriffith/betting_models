@@ -1,6 +1,6 @@
 import pandas as pd
 
-def clean_raw_data(df):
+def process_scoreboard(df):
     df = df.drop([
         "GAME_ID",
         "PTS_OT1",
@@ -37,46 +37,40 @@ def clean_raw_data(df):
 
     return df
 
-def join_team_stats(df, scope):
-    trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
-
-    # Join defensive stats to main df
-    def_df = trend_df[[
-        "TEAM_ID",
-        "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
-        "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
-    ]]
-    def_df = def_df.rename({
-        "OPP_EFG_PCT_RANK": f"OPP_EFG_PCT_RANK_LAST{scope}",
-        "OPP_FTA_RATE_RANK": f"OPP_FTA_RATE_RANK_LAST{scope}",
-        "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
-        "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
-    }, axis=1)
-    df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
-
-    # Join offensive stats to main df
-    off_df = trend_df[[
-        "TEAM_ID",
-        "EFG_PCT_RANK", "FTA_RATE_RANK",
-        "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
-    ]]
-    off_df = off_df.rename({
-        "EFG_PCT_RANK": f"EFG_PCT_RANK_LAST{scope}",
-        "FTA_RATE_RANK": f"FTA_RATE_RANK_LAST{scope}",
-        "TM_TOV_PCT_RANK": f"TOV_PCT_RANK_LAST{scope}",
-        "OREB_PCT_RANK": f"OREB_PCT_RANK_LAST{scope}",
-    }, axis=1)
-
-    return df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
-
-def prepare_training_data():
-    print("Preparing data for training...")
-    df = pd.read_csv("team_over_under/data/scoreboard_historical.csv", index_col=0, converters={"TEAM_ID": str}).head(10)
-
-    df = clean_raw_data(df)
-    
+def process_data():
+    print("Processing Data...")
+    df = pd.read_csv("team_over_under/data/scoreboard_historical.csv", index_col=0, converters={"TEAM_ID": str})
+    df = process_scoreboard(df)
     for scope in [50, 20, 10, 5]:
-        df = join_team_stats(df, scope)
+        trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
+
+        # Join defensive stats to main df
+        def_df = trend_df[[
+            "TEAM_ID",
+            "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
+            "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
+        ]]
+        def_df = def_df.rename({
+            "OPP_EFG_PCT_RANK": f"OPP_EFG_PCT_RANK_LAST{scope}",
+            "OPP_FTA_RATE_RANK": f"OPP_FTA_RATE_RANK_LAST{scope}",
+            "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
+            "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
+        }, axis=1)
+        df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
+
+        # Join offensive stats to main df
+        off_df = trend_df[[
+            "TEAM_ID",
+            "EFG_PCT_RANK", "FTA_RATE_RANK",
+            "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
+        ]]
+        off_df = off_df.rename({
+            "EFG_PCT_RANK": f"EFG_PCT_RANK_LAST{scope}",
+            "FTA_RATE_RANK": f"FTA_RATE_RANK_LAST{scope}",
+            "TM_TOV_PCT_RANK": f"TOV_PCT_RANK_LAST{scope}",
+            "OREB_PCT_RANK": f"OREB_PCT_RANK_LAST{scope}",
+        }, axis=1)
+        df = df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
 
         dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
@@ -87,8 +81,9 @@ def prepare_training_data():
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
         ]]
-
+        dfx = df.dropna()
+        print(dfx)
         dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
 if __name__ == "__main__":
-    prepare_training_data()
+    process_data()
