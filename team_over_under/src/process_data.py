@@ -3,9 +3,11 @@ import pandas as pd
 from pull_data import pull_scoreboard, pull_team_stats, pull_lines
 
 def process_data():
+    print("Pulling scoreboard info, team stats, and lines...")
     # pull_scoreboard()
     # pull_team_stats()
     # pull_lines()
+    print("Cleaning Data...")
     df = pd.read_csv("team_over_under/data/scoreboard_last60_days.csv", index_col=0, converters={"TEAM_ID": str})
 
     df = df.drop([
@@ -94,14 +96,14 @@ def process_data():
         "OPP_EFG_PCT_RANK_LAST20", "OPP_FTA_RATE_RANK_LAST20", "OPP_TOV_PCT_RANK_LAST20", "OPP_OREB_PCT_RANK_LAST20",
     ]]
 
-    dfx=df.groupby('TEAM').head(20)
-    import json
-    with open("team_over_under/data/team_mappings.json") as f:
-        teams = json.load(f)
-    for key, value in teams.items():
-        print(len(dfx.loc[dfx["TEAM"] == value]))
-
-    # df.to_csv("team_over_under/data/1st_half_team_total.csv")
+    for n in [20, 10, 5]:
+        dfx=df.groupby('TEAM').head(n)
+        dfx = dfx[[
+            "TEAM", "PTS_1H", "PTS", "HOME",
+            f"OPP_EFG_PCT_RANK_LAST{n}", f"OPP_FTA_RATE_RANK_LAST{n}",
+            f"OPP_TOV_PCT_RANK_LAST{n}", f"OPP_OREB_PCT_RANK_LAST{n}",
+        ]]
+        dfx.to_csv(f"team_over_under/data/last_{n}_team_stats.csv")
 
 if __name__ == "__main__":
     process_data()
