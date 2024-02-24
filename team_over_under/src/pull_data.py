@@ -10,7 +10,7 @@ def pull_scoreboard():
     print("Pulling scoreboard info...")
     df = None
     days_delta = 0
-    while days_delta < 200:
+    while days_delta < 100:
         days_delta += 1
         day = date.today() - timedelta(days=days_delta)
         print(f"scanning {day} for game data")
