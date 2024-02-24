@@ -81,8 +81,7 @@ def process_data():
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
         ]]
-        dfx = df.dropna()
-        print(dfx)
+        dfx = dfx.dropna()
         dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
 if __name__ == "__main__":
