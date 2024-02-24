@@ -1,0 +1,5 @@
+colorama
+pandas
+nba_api
+requests
+scikit-learn
