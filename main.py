@@ -2,9 +2,7 @@ from team_over_under.predict import predict
 from team_over_under.src.pull_data import pull_scoreboard, pull_team_stats
 from team_over_under.src.pull_lines import pull_lines
 
-import json
-
-from colorama import Fore, Back, Style
+from colorama import Back, Style
 
 def run_prediction():
     output = predict()
