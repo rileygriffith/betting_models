@@ -27,7 +27,7 @@ for scope in [50, 20, 10, 5]:
     df_total = df["PTS"]
     df.drop(["PTS_1H", "PTS"], axis=1, inplace=True)
 
-    # Train model
+    # Test model
     # model = LinearRegression()
     # X_train, X_test, y_train, y_test = train_test_split(df, df_total, test_size=0.2, random_state=1)
     # print("Training Model")
@@ -90,5 +90,6 @@ for scope in [50, 20, 10, 5]:
 
         pred = model_total.predict(data)[0]
         output[team][f"T_{scope}"] = pred
+    print(scoreboard_dfx)
 
 print(json.dumps(output, indent=4))
