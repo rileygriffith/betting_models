@@ -74,7 +74,7 @@ def process_data():
 
         dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
-            # "TEAM", 
+            "TEAM",
             "PTS_1H", "PTS", "HOME",
             f"EFG_PCT_RANK_LAST{scope}", f"FTA_RATE_RANK_LAST{scope}",
             f"TOV_PCT_RANK_LAST{scope}", f"OREB_PCT_RANK_LAST{scope}",
@@ -82,6 +82,12 @@ def process_data():
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
         ]]
         dfx = dfx.dropna()
+
+        # Join 1h and total pts averages
+        pts_df = dfx[["TEAM", "PTS_1H", "PTS"]]
+        pts_df = dfx.groupby('TEAM').mean()[["PTS_1H", "PTS"]]
+        dfx = dfx.join(pts_df, on="TEAM", rsuffix="_AVG")
+
         dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
 if __name__ == "__main__":
