@@ -1,14 +1,16 @@
 import pandas as pd
 
-from pull_data import pull_scoreboard, pull_team_stats, pull_lines
+from pull_data import pull_scoreboard, pull_team_stats
 
 def process_data():
     print("Pulling scoreboard info, team stats, and lines...")
-    # pull_scoreboard()
-    # pull_team_stats()
-    # pull_lines()
+    pull_scoreboard()
+    pull_team_stats()
     print("Cleaning Data...")
     df = pd.read_csv("team_over_under/data/scoreboard_last60_days.csv", index_col=0, converters={"TEAM_ID": str})
+    # Drop all star game
+    df = df.drop(df[df['TEAM_ABBREVIATION'] == 'EST'].index)
+    df = df.drop(df[df['TEAM_ABBREVIATION'] == 'WST'].index)
 
     df = df.drop([
         "GAME_ID",
@@ -37,14 +39,14 @@ def process_data():
 
     for i, game in df.groupby(df.index // 2):
         index = i*2
-        df.at[index, "HOME"] = False
-        df.at[index+1, "HOME"] = True
+        df.at[index, "HOME"] = 0 # bring these values to the same scale as team rankings
+        df.at[index+1, "HOME"] = 30
         df.at[index, "OPP"] = df.at[index+1, "TEAM"]
         df.at[index, "OPP_TEAM_ID"] = df.at[index+1, "TEAM_ID"]
         df.at[index+1, "OPP"] = df.at[index, "TEAM"]
         df.at[index+1, "OPP_TEAM_ID"] = df.at[index, "TEAM_ID"]
-
-    for scope in [20, 10, 5]:
+    
+    for scope in [50, 20, 10, 5]:
         trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
 
         # Join defensive stats to main df
@@ -77,7 +79,8 @@ def process_data():
 
         dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
-            "TEAM", "PTS_1H", "PTS", "HOME",
+            # "TEAM", 
+            "PTS_1H", "PTS", "HOME",
             f"EFG_PCT_RANK_LAST{scope}", f"FTA_RATE_RANK_LAST{scope}",
             f"TOV_PCT_RANK_LAST{scope}", f"OREB_PCT_RANK_LAST{scope}",
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
