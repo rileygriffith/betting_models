@@ -72,5 +72,4 @@ def pull_team_stats():
 if __name__ == "__main__":
     pull_scoreboard()
     pull_team_stats()
-    # pull_lines()
-    pass
+    pull_lines()
