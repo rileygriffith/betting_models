@@ -6,7 +6,7 @@ from nba_api.stats.endpoints.scoreboardv2 import ScoreboardV2
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
-from src.process_data import clean_raw_data, join_team_stats
+from src.process_data import process_scoreboard
 
 
 # df = pd.read_csv("team_over_under/data/last_20_team_stats.csv", index_col=0)
@@ -27,8 +27,8 @@ result = json.loads(ScoreboardV2(game_date=date.today(), day_offset=0, league_id
 time.sleep(2) # Sleep to prevent rate limiting
 headers = pd.DataFrame(result["resultSets"][1]["headers"])
 scoreboard_df = pd.DataFrame(result["resultSets"][1]["rowSet"], columns=headers[0])
-scoreboard_df = clean_raw_data(scoreboard_df)
-print(scoreboard_df)
-scoreboard_df = join_team_stats(scoreboard_df, 20)
+
+scoreboard_df = process_scoreboard(scoreboard_df)
+
 
 print(scoreboard_df)
