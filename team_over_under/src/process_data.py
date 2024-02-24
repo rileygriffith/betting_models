@@ -44,66 +44,47 @@ def process_data():
         df.at[index+1, "OPP"] = df.at[index, "TEAM"]
         df.at[index+1, "OPP_TEAM_ID"] = df.at[index, "TEAM_ID"]
 
-    trend_df = pd.read_csv("team_over_under/data/last_5_team_stats.csv", index_col=0, converters={"TEAM_ID": str})
-    trend_df = trend_df[[
-        "TEAM_ID", "TEAM_NAME",
-        "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
-        "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
-    ]]
-    trend_df = trend_df.rename({
-        "OPP_EFG_PCT_RANK": "OPP_EFG_PCT_RANK_LAST5",
-        "OPP_FTA_RATE_RANK": "OPP_FTA_RATE_RANK_LAST5",
-        "OPP_TOV_PCT_RANK": "OPP_TOV_PCT_RANK_LAST5",
-        "OPP_OREB_PCT_RANK": "OPP_OREB_PCT_RANK_LAST5",
-    }, axis=1)
+    for scope in [20, 10, 5]:
+        trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
 
-    df = df.join(trend_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
+        # Join defensive stats to main df
+        def_df = trend_df[[
+            "TEAM_ID",
+            "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
+            "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
+        ]]
+        def_df = def_df.rename({
+            "OPP_EFG_PCT_RANK": f"OPP_EFG_PCT_RANK_LAST{scope}",
+            "OPP_FTA_RATE_RANK": f"OPP_FTA_RATE_RANK_LAST{scope}",
+            "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
+            "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
+        }, axis=1)
+        df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
 
-    trend_df = pd.read_csv("team_over_under/data/last_10_team_stats.csv", index_col=0, converters={"TEAM_ID": str})
-    trend_df = trend_df[[
-        "TEAM_ID",
-        "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
-        "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
-    ]]
-    trend_df = trend_df.rename({
-        "OPP_EFG_PCT_RANK": "OPP_EFG_PCT_RANK_LAST10",
-        "OPP_FTA_RATE_RANK": "OPP_FTA_RATE_RANK_LAST10",
-        "OPP_TOV_PCT_RANK": "OPP_TOV_PCT_RANK_LAST10",
-        "OPP_OREB_PCT_RANK": "OPP_OREB_PCT_RANK_LAST10",
-    }, axis=1)
+        # Join offensive stats to main df
+        off_df = trend_df[[
+            "TEAM_ID",
+            "EFG_PCT_RANK", "FTA_RATE_RANK",
+            "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
+        ]]
+        off_df = off_df.rename({
+            "EFG_PCT_RANK": f"EFG_PCT_RANK_LAST{scope}",
+            "FTA_RATE_RANK": f"FTA_RATE_RANK_LAST{scope}",
+            "TM_TOV_PCT_RANK": f"TOV_PCT_RANK_LAST{scope}",
+            "OREB_PCT_RANK": f"OREB_PCT_RANK_LAST{scope}",
+        }, axis=1)
+        df = df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
 
-    df = df.join(trend_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
-
-    trend_df = pd.read_csv("team_over_under/data/last_20_team_stats.csv", index_col=0, converters={"TEAM_ID": str})
-    trend_df = trend_df[[
-        "TEAM_ID",
-        "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
-        "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
-    ]]
-    trend_df = trend_df.rename({
-        "OPP_EFG_PCT_RANK": "OPP_EFG_PCT_RANK_LAST20",
-        "OPP_FTA_RATE_RANK": "OPP_FTA_RATE_RANK_LAST20",
-        "OPP_TOV_PCT_RANK": "OPP_TOV_PCT_RANK_LAST20",
-        "OPP_OREB_PCT_RANK": "OPP_OREB_PCT_RANK_LAST20",
-    }, axis=1)
-
-    df = df.join(trend_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
-
-    df = df[[
-        "TEAM", "PTS_1H", "PTS", "HOME",
-        "OPP_EFG_PCT_RANK_LAST5", "OPP_FTA_RATE_RANK_LAST5", "OPP_TOV_PCT_RANK_LAST5", "OPP_OREB_PCT_RANK_LAST5",
-        "OPP_EFG_PCT_RANK_LAST10", "OPP_FTA_RATE_RANK_LAST10", "OPP_TOV_PCT_RANK_LAST10", "OPP_OREB_PCT_RANK_LAST10",
-        "OPP_EFG_PCT_RANK_LAST20", "OPP_FTA_RATE_RANK_LAST20", "OPP_TOV_PCT_RANK_LAST20", "OPP_OREB_PCT_RANK_LAST20",
-    ]]
-
-    for n in [20, 10, 5]:
-        dfx=df.groupby('TEAM').head(n)
+        dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
             "TEAM", "PTS_1H", "PTS", "HOME",
-            f"OPP_EFG_PCT_RANK_LAST{n}", f"OPP_FTA_RATE_RANK_LAST{n}",
-            f"OPP_TOV_PCT_RANK_LAST{n}", f"OPP_OREB_PCT_RANK_LAST{n}",
+            f"EFG_PCT_RANK_LAST{scope}", f"FTA_RATE_RANK_LAST{scope}",
+            f"TOV_PCT_RANK_LAST{scope}", f"OREB_PCT_RANK_LAST{scope}",
+            f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
+            f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
         ]]
-        dfx.to_csv(f"team_over_under/data/last_{n}_team_stats.csv")
+        print(dfx)
+        dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
 if __name__ == "__main__":
     process_data()
