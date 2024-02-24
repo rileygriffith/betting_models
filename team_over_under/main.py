@@ -82,16 +82,13 @@ for scope in [50, 20, 10, 5]:
     for row in scoreboard_dfx.iterrows():
         index, data = row
         team = data['TEAM']
-        output[team] = {}
+        output[team] = output.get(team, {})
 
-        print(f"Prediction for {team}")
         data = data.drop("TEAM").to_frame().T
         pred = model_1h.predict(data)[0]
-        print(f"\t1H: {pred}")
         output[team][f"1H_{scope}"] = pred
 
         pred = model_total.predict(data)[0]
-        print(f"\tTotal: {pred}")
         output[team][f"T_{scope}"] = pred
 
 print(json.dumps(output, indent=4))
