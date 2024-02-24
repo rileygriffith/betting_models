@@ -7,6 +7,7 @@ import time
 from datetime import date, timedelta
 
 def pull_scoreboard():
+    print("Pulling scoreboard info...")
     df = None
     days_delta = 0
     while days_delta < 200:
@@ -26,9 +27,10 @@ def pull_scoreboard():
                 print(f"game data found for {day}")
                 df = pd.concat([df, boxscore_df], ignore_index=True)
         
-    df.to_csv("team_over_under/data/scoreboard_last60_days.csv")
+    df.to_csv("team_over_under/data/scoreboard_historical.csv")
 
 def pull_team_stats():
+    print("Pulling team stats...")
     for last_n_games in [50, 20, 10, 5]:
         result = json.loads(LeagueDashTeamStats(last_n_games=last_n_games, per_mode_detailed="PerGame", measure_type_detailed_defense="Four Factors").get_response())
         time.sleep(3) # Sleep to prevent rate limiting

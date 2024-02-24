@@ -1,17 +1,6 @@
 import pandas as pd
 
-from pull_data import pull_scoreboard, pull_team_stats
-
-def process_data():
-    print("Pulling scoreboard info, team stats, and lines...")
-    pull_scoreboard()
-    pull_team_stats()
-    print("Cleaning Data...")
-    df = pd.read_csv("team_over_under/data/scoreboard_last60_days.csv", index_col=0, converters={"TEAM_ID": str})
-    # Drop all star game
-    df = df.drop(df[df['TEAM_ABBREVIATION'] == 'EST'].index)
-    df = df.drop(df[df['TEAM_ABBREVIATION'] == 'WST'].index)
-
+def clean_raw_data(df):
     df = df.drop([
         "GAME_ID",
         "PTS_OT1",
@@ -45,37 +34,49 @@ def process_data():
         df.at[index, "OPP_TEAM_ID"] = df.at[index+1, "TEAM_ID"]
         df.at[index+1, "OPP"] = df.at[index, "TEAM"]
         df.at[index+1, "OPP_TEAM_ID"] = df.at[index, "TEAM_ID"]
+
+    return df
+
+def join_team_stats(df, scope):
+    trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
+
+    # Join defensive stats to main df
+    def_df = trend_df[[
+        "TEAM_ID",
+        "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
+        "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
+    ]]
+    def_df = def_df.rename({
+        "OPP_EFG_PCT_RANK": f"OPP_EFG_PCT_RANK_LAST{scope}",
+        "OPP_FTA_RATE_RANK": f"OPP_FTA_RATE_RANK_LAST{scope}",
+        "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
+        "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
+    }, axis=1)
+    df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
+
+    # Join offensive stats to main df
+    off_df = trend_df[[
+        "TEAM_ID",
+        "EFG_PCT_RANK", "FTA_RATE_RANK",
+        "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
+    ]]
+    off_df = off_df.rename({
+        "EFG_PCT_RANK": f"EFG_PCT_RANK_LAST{scope}",
+        "FTA_RATE_RANK": f"FTA_RATE_RANK_LAST{scope}",
+        "TM_TOV_PCT_RANK": f"TOV_PCT_RANK_LAST{scope}",
+        "OREB_PCT_RANK": f"OREB_PCT_RANK_LAST{scope}",
+    }, axis=1)
+
+    return df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
+
+def prepare_training_data():
+    print("Preparing data for training...")
+    df = pd.read_csv("team_over_under/data/scoreboard_historical.csv", index_col=0, converters={"TEAM_ID": str}).head(10)
+
+    df = clean_raw_data(df)
     
     for scope in [50, 20, 10, 5]:
-        trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
-
-        # Join defensive stats to main df
-        def_df = trend_df[[
-            "TEAM_ID",
-            "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
-            "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
-        ]]
-        def_df = def_df.rename({
-            "OPP_EFG_PCT_RANK": f"OPP_EFG_PCT_RANK_LAST{scope}",
-            "OPP_FTA_RATE_RANK": f"OPP_FTA_RATE_RANK_LAST{scope}",
-            "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
-            "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
-        }, axis=1)
-        df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
-
-        # Join offensive stats to main df
-        off_df = trend_df[[
-            "TEAM_ID",
-            "EFG_PCT_RANK", "FTA_RATE_RANK",
-            "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
-        ]]
-        off_df = off_df.rename({
-            "EFG_PCT_RANK": f"EFG_PCT_RANK_LAST{scope}",
-            "FTA_RATE_RANK": f"FTA_RATE_RANK_LAST{scope}",
-            "TM_TOV_PCT_RANK": f"TOV_PCT_RANK_LAST{scope}",
-            "OREB_PCT_RANK": f"OREB_PCT_RANK_LAST{scope}",
-        }, axis=1)
-        df = df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
+        df = join_team_stats(df, scope)
 
         dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
@@ -86,8 +87,8 @@ def process_data():
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
         ]]
-        print(dfx)
+
         dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
 if __name__ == "__main__":
-    process_data()
+    prepare_training_data()
