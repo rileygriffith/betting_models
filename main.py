@@ -51,7 +51,7 @@ def run_prediction():
                 margin = round((sum(home_total) / len(home_total)) - (sum(away_total) / len(away_total)), 1)
                 print(Back.GREEN + f"Average Margin of Victory Total: {margin}" + Style.RESET_ALL)
             elif home_categories_won < away_categories_won:
-                print(Back.GREEN + f"{away_team} wins in {away_categories_won} out of 8 model predictions" + Style.RESET_ALL)
+                print(Back.RED + f"{away_team} wins in {away_categories_won} out of 8 model predictions" + Style.RESET_ALL)
                 margin = round((sum(away_1h) / len(away_1h)) - (sum(home_1h) / len(home_1h)), 1)
                 print(Back.GREEN + f"Average Margin of Victory First Half: {margin}" + Style.RESET_ALL)
                 margin = round((sum(away_total) / len(away_total)) - (sum(home_total) / len(home_total)), 1)
@@ -77,8 +77,8 @@ def pull_new_lines():
     pull_lines()
 
 if __name__ == "__main__":
-    new_data = input("Would you like to pull new data? (y/n) ")
-    if new_data.lower() == "y":
-        pull_new_data()
+    # new_data = input("Would you like to pull new data? (y/n) ")
+    # if new_data.lower() == "y":
+    #     pull_new_data()
 
     run_prediction()
