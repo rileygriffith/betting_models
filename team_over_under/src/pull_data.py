@@ -38,7 +38,6 @@ def pull_four_factors():
         df = pd.DataFrame(result["resultSets"][0]["rowSet"], columns=headers[0])
         filename = f"last_{last_n_games}_four_factors.csv"
         df.to_csv(f"team_over_under/data/{filename}")
-    print(df)
 
 def pull_advanced():
     print("Pulling team stats...")
@@ -49,7 +48,6 @@ def pull_advanced():
         df = pd.DataFrame(result["resultSets"][0]["rowSet"], columns=headers[0])
         filename = f"last_{last_n_games}_advanced.csv"
         df.to_csv(f"team_over_under/data/{filename}")
-    print(df)
 
 if __name__ == "__main__":
     pull_scoreboard()
