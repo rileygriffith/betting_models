@@ -4,8 +4,8 @@ from team_over_under.src.pull_lines import pull_lines
 
 from colorama import Back, Style
 
-def run_prediction():
-    output = predict()
+def run_prediction(tomorrow=False):
+    output = predict(tomorrow)
     results_1h, results_total = [], []
     away_team = None
     for key, value in output.items():
@@ -77,8 +77,14 @@ def pull_new_lines():
     pull_lines()
 
 if __name__ == "__main__":
-    # new_data = input("Would you like to pull new data? (y/n) ")
-    # if new_data.lower() == "y":
-    #     pull_new_data()
+    new_data = input("Would you like to pull new data? (y/n) ")
+    tomorrow = input("Would you like to run predictions for today or tomorrow's games (today/tomorrow) ")
+    if new_data.lower() == "y":
+        pull_new_data()
 
-    run_prediction()
+    if tomorrow.lower() == "tomorrow":
+        run_prediction(tomorrow=True)
+    elif tomorrow.lower() == "today":
+        run_prediction(tomorrow=False)
+    else:
+        print("Invalid input")

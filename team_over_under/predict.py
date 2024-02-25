@@ -1,15 +1,18 @@
 import pandas as pd
 import json
 import time
-from datetime import date
+from datetime import date, timedelta
 from nba_api.stats.endpoints.scoreboardv2 import ScoreboardV2
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
 from team_over_under.src.process_data import process_scoreboard
 
-def predict():
-    result = json.loads(ScoreboardV2(game_date=date.today(), day_offset=0, league_id="00").get_response())
+def predict(tomorrow=False):
+    day = date.today()
+    if tomorrow:
+        day += timedelta(days=1)
+    result = json.loads(ScoreboardV2(game_date=day, day_offset=0, league_id="00").get_response())
     time.sleep(1) # Sleep to prevent rate limiting
     headers = pd.DataFrame(result["resultSets"][1]["headers"])
     scoreboard_raw_df = pd.DataFrame(result["resultSets"][1]["rowSet"], columns=headers[0])
