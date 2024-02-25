@@ -29,17 +29,29 @@ def pull_scoreboard():
         
     df.to_csv("team_over_under/data/scoreboard_historical.csv")
 
-def pull_team_stats():
+def pull_four_factors():
     print("Pulling team stats...")
     for last_n_games in [50, 20, 10, 5]:
         result = json.loads(LeagueDashTeamStats(last_n_games=last_n_games, per_mode_detailed="PerGame", measure_type_detailed_defense="Four Factors").get_response())
-        time.sleep(3) # Sleep to prevent rate limiting
+        time.sleep(2) # Sleep to prevent rate limiting
         headers = pd.DataFrame(result["resultSets"][0]["headers"])
         df = pd.DataFrame(result["resultSets"][0]["rowSet"], columns=headers[0])
-        filename = f"last_{last_n_games}_team_stats_raw.csv"
+        filename = f"last_{last_n_games}_four_factors.csv"
+        df.to_csv(f"team_over_under/data/{filename}")
+    print(df)
+
+def pull_advanced():
+    print("Pulling team stats...")
+    for last_n_games in [50, 20, 10, 5]:
+        result = json.loads(LeagueDashTeamStats(last_n_games=last_n_games, per_mode_detailed="PerGame", measure_type_detailed_defense="Advanced").get_response())
+        time.sleep(2) # Sleep to prevent rate limiting
+        headers = pd.DataFrame(result["resultSets"][0]["headers"])
+        df = pd.DataFrame(result["resultSets"][0]["rowSet"], columns=headers[0])
+        filename = f"last_{last_n_games}_advanced.csv"
         df.to_csv(f"team_over_under/data/{filename}")
     print(df)
 
 if __name__ == "__main__":
-    pull_scoreboard()
-    pull_team_stats()
+    # pull_scoreboard()
+    # pull_four_factors()
+    pull_advanced()
