@@ -1,5 +1,5 @@
 from team_over_under.predict import predict
-from team_over_under.src.pull_data import pull_scoreboard, pull_team_stats
+from team_over_under.src.pull_data import pull_scoreboard, pull_four_factors
 from team_over_under.src.pull_lines import pull_lines
 
 from colorama import Back, Style
@@ -62,7 +62,7 @@ def run_prediction():
             # Output average totals
             total = round(sum(home_1h) / len(home_1h), 1) + round(sum(away_1h) / len(away_1h), 1)
             print(Back.GREEN + f"Average First Half Total: {total}" + Style.RESET_ALL)
-            total = round(sum(home_total) / len(home_total), 1) + round(sum(away_total) / len(away_total), 1)
+            total = round((sum(home_total) / len(home_total)) + (sum(away_total) / len(away_total)), 1)
             print(Back.GREEN + f"Average Total: {total}" + Style.RESET_ALL)
             print("-----------------------------------")
             print()
@@ -71,7 +71,7 @@ def run_prediction():
 
 def pull_new_data():
     pull_scoreboard()
-    pull_team_stats()
+    pull_four_factors()
 
 def pull_new_lines():
     pull_lines()

@@ -52,6 +52,6 @@ def pull_advanced():
     print(df)
 
 if __name__ == "__main__":
-    # pull_scoreboard()
-    # pull_four_factors()
+    pull_scoreboard()
+    pull_four_factors()
     pull_advanced()

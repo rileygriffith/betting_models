@@ -42,7 +42,7 @@ def process_data():
     df = pd.read_csv("team_over_under/data/scoreboard_historical.csv", index_col=0, converters={"TEAM_ID": str})
     df = process_scoreboard(df)
     for scope in [50, 20, 10, 5]:
-        trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0, converters={"TEAM_ID": str})
+        trend_df = pd.read_csv(f"team_over_under/data/last_{scope}_four_factors.csv", index_col=0, converters={"TEAM_ID": str})
 
         # Join defensive stats to main df
         def_df = trend_df[[

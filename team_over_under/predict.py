@@ -33,7 +33,7 @@ def predict():
         model_total = LinearRegression()
         model_total.fit(df, df_total)
 
-        rankings_df = pd.read_csv(f"team_over_under/data/last_{scope}_team_stats_raw.csv", index_col=0)
+        rankings_df = pd.read_csv(f"team_over_under/data/last_{scope}_four_factors.csv", index_col=0)
         scoreboard_df = scoreboard_raw_df
         # Join defensive stats to main df
         def_df = rankings_df[[
