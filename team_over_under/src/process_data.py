@@ -58,6 +58,11 @@ def process_data():
         }, axis=1)
         df = df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
 
+        adv_df = pd.read_csv(f"team_over_under/data/last_{scope}_advanced.csv", index_col=0, converters={"TEAM_ID": str})
+        adv_df = adv_df[[ "TEAM_ID", "DEF_RATING" ]]
+        df = df.join(adv_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
+        df = df.rename({"DEF_RATING": f"DEF_RATING_LAST{scope}"}, axis=1)
+
         # Join offensive stats to main df
         off_df = trend_df[[
             "TEAM_ID",
@@ -72,6 +77,11 @@ def process_data():
         }, axis=1)
         df = df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
 
+        adv_df = pd.read_csv(f"team_over_under/data/last_{scope}_advanced.csv", index_col=0, converters={"TEAM_ID": str})
+        adv_df = adv_df[[ "TEAM_ID", "OFF_RATING" ]]
+        df = df.join(adv_df.set_index("TEAM_ID"), on="TEAM_ID")
+        df = df.rename({"OFF_RATING": f"OFF_RATING_LAST{scope}"}, axis=1)
+
         dfx=df.groupby('TEAM').head(scope)
         dfx = dfx[[
             "TEAM",
@@ -80,6 +90,7 @@ def process_data():
             f"TOV_PCT_RANK_LAST{scope}", f"OREB_PCT_RANK_LAST{scope}",
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
+            f"DEF_RATING_LAST{scope}", f"OFF_RATING_LAST{scope}",
         ]]
         dfx = dfx.dropna()
 
@@ -87,6 +98,7 @@ def process_data():
         pts_df = dfx[["TEAM", "PTS_1H", "PTS"]]
         pts_df = dfx.groupby('TEAM').mean()[["PTS_1H", "PTS"]]
         dfx = dfx.join(pts_df, on="TEAM", rsuffix="_AVG")
+        dfx = dfx.rename({"PTS_1H_AVG": f"PTS_1H_LAST{scope}", "PTS_AVG": f"PTS_LAST{scope}"}, axis=1)
 
         dfx.to_csv(f"team_over_under/data/last_{scope}_team_stats.csv")
 
