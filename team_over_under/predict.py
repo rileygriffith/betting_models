@@ -15,7 +15,7 @@ def predict():
     scoreboard_raw_df = pd.DataFrame(result["resultSets"][1]["rowSet"], columns=headers[0])
 
     scoreboard_raw_df = process_scoreboard(scoreboard_raw_df)
-    scoreboard_raw_df["OPP_TEAM_ID"] = scoreboard_raw_df["OPP_TEAM_ID"].astype("str")
+    scoreboard_raw_df["OPP_TEAM_ID"] = scoreboard_raw_df["OPP_TEAM_ID"].astype(int)
 
     output = {}
     for scope in [50, 20, 10, 5]:
@@ -33,10 +33,12 @@ def predict():
         model_total = LinearRegression()
         model_total.fit(df, df_total)
 
-        rankings_df = pd.read_csv(f"team_over_under/data/last_{scope}_four_factors.csv", index_col=0)
+        four_factors_df = pd.read_csv(f"team_over_under/data/last_{scope}_four_factors.csv", index_col=0)
+        advanced_df = pd.read_csv(f"team_over_under/data/last_{scope}_advanced.csv", index_col=0)
+
         scoreboard_df = scoreboard_raw_df
         # Join defensive stats to main df
-        def_df = rankings_df[[
+        def_df = four_factors_df[[
             "TEAM_ID",
             "OPP_EFG_PCT_RANK", "OPP_FTA_RATE_RANK",
             "OPP_TOV_PCT_RANK", "OPP_OREB_PCT_RANK",
@@ -47,12 +49,13 @@ def predict():
             "OPP_TOV_PCT_RANK": f"OPP_TOV_PCT_RANK_LAST{scope}",
             "OPP_OREB_PCT_RANK": f"OPP_OREB_PCT_RANK_LAST{scope}",
         }, axis=1)
-        scoreboard_df["OPP_TEAM_ID"] = scoreboard_df["TEAM_ID"].astype("str")
-        def_df["TEAM_ID"] = def_df["TEAM_ID"].astype("str")
+        scoreboard_df = scoreboard_df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
+
+        def_df = advanced_df[["TEAM_ID", "DEF_RATING"]].rename({"DEF_RATING": f"DEF_RATING_LAST{scope}"}, axis=1)
         scoreboard_df = scoreboard_df.join(def_df.set_index("TEAM_ID"), on="OPP_TEAM_ID")
 
         # Join offensive stats to main df
-        off_df = rankings_df[[
+        off_df = four_factors_df[[
             "TEAM_ID",
             "EFG_PCT_RANK", "FTA_RATE_RANK",
             "TM_TOV_PCT_RANK", "OREB_PCT_RANK",
@@ -65,19 +68,23 @@ def predict():
         }, axis=1)
         scoreboard_df = scoreboard_df.join(off_df.set_index("TEAM_ID"), on="TEAM_ID")
 
+        def_df = advanced_df[["TEAM_ID", "OFF_RATING"]].rename({"OFF_RATING": f"OFF_RATING_LAST{scope}"}, axis=1)
+        scoreboard_df = scoreboard_df.join(def_df.set_index("TEAM_ID"), on="TEAM_ID")
+
         scoreboard_df = scoreboard_df[[
             "TEAM", "HOME",
             f"EFG_PCT_RANK_LAST{scope}", f"FTA_RATE_RANK_LAST{scope}",
             f"TOV_PCT_RANK_LAST{scope}", f"OREB_PCT_RANK_LAST{scope}",
             f"OPP_EFG_PCT_RANK_LAST{scope}", f"OPP_FTA_RATE_RANK_LAST{scope}",
             f"OPP_TOV_PCT_RANK_LAST{scope}", f"OPP_OREB_PCT_RANK_LAST{scope}",
+            f"DEF_RATING_LAST{scope}", f"OFF_RATING_LAST{scope}",
         ]]
 
         # Join 1h and total pts averages
         scoreboard_df = scoreboard_df.join(pts_averages_df, on="TEAM")
         scoreboard_df = scoreboard_df.rename({
-            "PTS": "PTS_AVG",
-            "PTS_1H": "PTS_1H_AVG",
+            "PTS": f"PTS_LAST{scope}",
+            "PTS_1H": f"PTS_1H_LAST{scope}",
         }, axis=1)
 
         for row in scoreboard_df.iterrows():
