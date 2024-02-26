@@ -21,6 +21,7 @@ def pull_scoreboard():
 
         boxscore_df["GAME_DATE_EST"] = pd.to_datetime(boxscore_df["GAME_DATE_EST"])
         if len(boxscore_df):
+            print((f"Found game data on {day}"))
             if df is None:
                 df = boxscore_df
             else:
