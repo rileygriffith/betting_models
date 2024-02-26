@@ -24,7 +24,6 @@ def pull_scoreboard():
             if df is None:
                 df = boxscore_df
             else:
-                print(f"game data found for {day}")
                 df = pd.concat([df, boxscore_df], ignore_index=True)
         
     df.to_csv("team_over_under/data/scoreboard_historical.csv")
