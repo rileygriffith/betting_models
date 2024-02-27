@@ -38,18 +38,20 @@ def run_prediction(tomorrow=False):
         print("-----------------------------------")
         print()
 
-def pull_new_data():
-    pull_scoreboard()
+def pull_new_data(tomorrow):
+    pull_scoreboard(tomorrow)
     pull_four_factors()
 
 def pull_new_lines():
     pull_lines()
 
 if __name__ == "__main__":
-    if '-n' in sys.argv[1:]:
-        pull_new_data()
-
     if "tomorrow" in sys.argv[1:]:
-        run_prediction(tomorrow=True)
+        tomorrow = True
     else:
-        run_prediction(tomorrow=False)
+        tomorrow = False
+
+    if '-n' in sys.argv[1:]:
+        pull_new_data(tomorrow)
+
+    run_prediction(tomorrow)

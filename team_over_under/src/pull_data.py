@@ -6,10 +6,10 @@ import pandas as pd
 import time
 from datetime import date, timedelta
 
-def pull_scoreboard():
+def pull_scoreboard(tomorrow):
     print("Pulling scoreboard info...")
     df = None
-    days_delta = 0
+    days_delta = -1 if tomorrow else 0
     while days_delta < 100:
         days_delta += 1
         day = date.today() - timedelta(days=days_delta)
@@ -21,6 +21,11 @@ def pull_scoreboard():
 
         boxscore_df["GAME_DATE_EST"] = pd.to_datetime(boxscore_df["GAME_DATE_EST"])
         if len(boxscore_df):
+            # Remove incomplete game data
+            boxscore_df = boxscore_df.drop(boxscore_df[(boxscore_df["PTS_QTR1"] == 0)].index)
+            boxscore_df = boxscore_df.drop(boxscore_df[(boxscore_df["PTS_QTR2"] == 0)].index)
+            boxscore_df = boxscore_df.drop(boxscore_df[(boxscore_df["PTS_QTR3"] == 0)].index)
+            boxscore_df = boxscore_df.drop(boxscore_df[(boxscore_df["PTS_QTR4"] == 0)].index)
             print((f"Found game data on {day}"))
             if df is None:
                 df = boxscore_df
