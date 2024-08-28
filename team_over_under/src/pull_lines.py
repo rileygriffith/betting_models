@@ -1,7 +1,7 @@
 import requests
 import json
 
-API_KEY = "586d76a1d384f9bb19d1df537db8bec4"
+API_KEY = "XXXXXX"
 URL = "https://api.the-odds-api.com/v4/sports"
 
 with open('team_over_under/utils/team_mappings.json') as f:
