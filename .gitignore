@@ -2,3 +2,4 @@ venv
 __pycache__
 team_over_under/data/
 output.txt
+.env
